@@ -11,7 +11,7 @@ const io = socket(server)
 
 const chess = new Chess();
 let players = {} ;
-let player1 = "W" ;
+let player1 = "w" ;
 
 app.set('view engine' , 'ejs')
 app.use(express.urlencoded({extended : true }))
@@ -35,14 +35,14 @@ io.on("connection" , function(uniquesocket){
       //         console.log("disconnected");
               
       // })
-
+      
       if(!players.white){
               
             players.white = uniquesocket.id ;
-            uniquesocket.emit("playerRole" , "W");
+            uniquesocket.emit("playerRole" , "w");
       }else if (!players.black){
             players.black = uniquesocket.id ;
-            uniquesocket.emit("playerRole" , "B");
+            uniquesocket.emit("playerRole" , "b");
       }else{
              
             uniquesocket.emit("spectator")
@@ -62,17 +62,16 @@ io.on("connection" , function(uniquesocket){
 
             try{
 
-                  if( chess.turn() === "W" && uniquesocket.id != players.white )  return ;
-                  if( chess.turn() === "B" && uniquesocket.id != players.black )  return ;
+                  if( chess.turn() === "w" && uniquesocket.id != players.white )  return ;
+                  if( chess.turn() === "b" && uniquesocket.id != players.black )  return ;
 
                   const result = chess.move(move) ;
 
                   if(result){
                         player1 = chess.turn();
-                        io.emit();
                         io.emit("boardState" , chess.fen())
                   }else{
-                         console.log("Invalid move" , move);
+                        
                          uniquesocket.emit("Invalid Move" , move)
                          
                   }
