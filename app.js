@@ -3,7 +3,6 @@ const socket = require('socket.io')
 const { Chess } = require('chess.js')
 const http = require('http')
 const path = require('path')
-
 const app = express();
 const server = http.createServer(app)
 
@@ -19,7 +18,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, 'Public')));
 
 app.get("/", (req, res) => {
-      res.render("index.ejs", { title: "ChessArena" })
+      res.render("index.ejs", { title: "ChessArena" } )
 })
 
 io.on("connection", function (uniquesocket) {
