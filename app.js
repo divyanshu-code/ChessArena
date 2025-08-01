@@ -10,84 +10,96 @@ const server = http.createServer(app)
 const io = socket(server)
 
 const chess = new Chess();
-let players = {} ;
-let player1 = "w" ;
+let players = {};
+let player1 = "w";
 
-app.set('view engine' , 'ejs')
-app.use(express.urlencoded({extended : true }))
+app.set('view engine', 'ejs')
+app.use(express.urlencoded({ extended: true }))
 
-app.use(express.static(path.join(__dirname , 'Public')));
+app.use(express.static(path.join(__dirname, 'Public')));
 
-app.get("/" , (req , res)=>{
-      res.render("index.ejs" , {title : "ChessArena"})
+app.get("/", (req, res) => {
+      res.render("index.ejs", { title: "ChessArena" })
 })
 
-io.on("connection" , function(uniquesocket){
-       
-    console.log("connected");
+io.on("connection", function (uniquesocket) {
 
-//     uniquesocket.on( "divyanshu", function(){         // receive the data on backend from fontend.
-//          io.emit("divyanshu neha")                   // send again the data to frontend.
-         
-//     })
- 
+      console.log("connected");
+
+      //     uniquesocket.on( "divyanshu", function(){         // receive the data on backend from fontend.
+      //          io.emit("divyanshu neha")                    // send again the data to frontend.
+
+      //     })
+
       // uniquesocket.on("disconnect" , ()=>{
       //         console.log("disconnected");
-              
+
       // })
-      
-      if(!players.white){
-              
-            players.white = uniquesocket.id ;
-            uniquesocket.emit("playerRole" , "w");
-      }else if (!players.black){
-            players.black = uniquesocket.id ;
-            uniquesocket.emit("playerRole" , "b");
-      }else{
-             
+
+      if (!players.white) {
+
+            players.white = uniquesocket.id;
+            uniquesocket.emit("playerRole", "w");
+      } else if (!players.black) {
+            players.black = uniquesocket.id;
+            uniquesocket.emit("playerRole", "b");
+      } else {
+
             uniquesocket.emit("spectator")
       }
-    
 
-      uniquesocket.on('disconnect' , function(){
-             
-             if(uniquesocket.id === players.white){
+
+      uniquesocket.on('disconnect', function () {
+
+            if (uniquesocket.id === players.white) {
                   delete players.white;
-             }else if(uniquesocket.id === players.black){
-                    delete players.black;
-             }
+            } else if (uniquesocket.id === players.black) {
+                  delete players.black;
+            }
       })
 
-      uniquesocket.on("move" , (move)=>{
+      uniquesocket.on("move", (move) => {
 
-            try{
+            try {
 
-                  if( chess.turn() === "w" && uniquesocket.id != players.white )  return ;
-                  if( chess.turn() === "b" && uniquesocket.id != players.black )  return ;
+                  if (chess.turn() === "w" && uniquesocket.id != players.white) return;
+                  if (chess.turn() === "b" && uniquesocket.id != players.black) return;
 
-                  const result = chess.move(move) ;
+                  const result = chess.move(move);
 
-                  if(result){
+                  if (result) {
                         player1 = chess.turn();
-                        io.emit("boardState" , chess.fen())
-                  }else{
-                        
-                         uniquesocket.emit("Invalid Move" , move)
-                         
+                        io.emit("boardState", chess.fen())
                   }
 
+                  if (chess.in_checkmate()) {
+                        const winner = chess.turn() === 'w' ? 'Black' : 'White';
+                        io.emit("gameOver", `${winner} wins by checkmate!`);
+                  } else if (chess.in_stalemate()) {
+                        io.emit("gameOver", "Draw by stalemate!");
+                  } else if (chess.in_draw()) {
+                        io.emit("gameOver", "Draw!");
+                  } else if (chess.insufficient_material()) {
+                        io.emit("gameOver", "Draw: Insufficient material!");
+                  } else if (chess.in_threefold_repetition()) {
+                        io.emit("gameOver", "Draw: Threefold repetition!");
+                  } else {
 
-            }catch(err){
-                     console.log(err);
-                     
+                        uniquesocket.emit("Invalid Move", move)
+
+                  }
+
+            } catch (err) {
+            
+
             }
 
       })
 })
 
-server.listen(3000 , function(){
+server.listen(3000, function () {
       console.log("server is running");
-      
+
 })
 
 

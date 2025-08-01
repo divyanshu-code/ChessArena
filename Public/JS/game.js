@@ -162,4 +162,8 @@ socket.on("move" , function(move){
        renderBoard();
 })
 
+socket.on("gameOver", function(message) {
+  alert(message);  
+});
+
 renderBoard();
