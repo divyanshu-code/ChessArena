@@ -1,9 +1,10 @@
 const express = require('express')
+const app = express();
 const socket = require('socket.io')
 const { Chess } = require('chess.js')
 const http = require('http')
 const path = require('path')
-const app = express();
+
 const server = http.createServer(app)
 
 const io = socket(server)
